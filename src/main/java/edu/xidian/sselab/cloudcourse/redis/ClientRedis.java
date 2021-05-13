@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.ToString;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import java.util.Set;
@@ -18,23 +19,19 @@ import java.util.Set;
 public class ClientRedis {
     private  Jedis jedis;
     private  Pipeline pipeline;
-    private  String key = "rdb-6";
+    private  String key = "05132021";
+    private  String hostIP = "192.168.131.143";
     private  String mainChannel = "RawDataFromKafka";
 
-    public ClientRedis(){}
-    public ClientRedis(String setKey){
-        this.key = setKey;
-    }
-   
-    public  ClientRedis(boolean autoSetupConnect,String hostIP){
-        if(autoSetupConnect){
-            this.setRelation(hostIP);
-        }
+    public ClientRedis(){
+        this.setRelation(this.hostIP);
     }
 
-    public static  void  main(String[] args){
-        ClientRedis clientRedis = new ClientRedis(true,"1.116.69.183");
+    public  ClientRedis(String hostIP){
+        this.setRelation(hostIP);
+
     }
+
 
     //与redis建立连接
     public  void setRelation(String hostIP){
@@ -50,21 +47,32 @@ public class ClientRedis {
         }
     }
 
+    public void  publishRecords(Set<String> records){
+        for(String string:records){
+            this.pipeline.publish(this.mainChannel,string);
+        }
+        this.pipeline.sync();
+    }
+
+    public void clearSet(){
+        this.jedis.del(this.key);
+    }
+
+    public long getSetSize(){
+        return  this.jedis.scard(this.key);
+    }
+
     //插入单条kafka数据
     public void dataFromKafka2RDB(ConsumerRecord<String,String> singleRecord){
         this.jedis.sadd(this.key,singleRecord.value());
-        this.jedis.publish(this.mainChannel,singleRecord.value());
     }
 
     //使用pipeline批量插入大量kafka数据集合
-    //注意：数据量必须足够大，否则会暂存在Pipeline里无法及时插入redis中
     public  void  dataFromKafka2RDB(ConsumerRecords<String, String> records){
         for(ConsumerRecord<String,String> record:records){
             this.pipeline.sadd(this.key,record.value());
         }
-        for(ConsumerRecord<String,String> record:records){
-            this.jedis.publish(this.mainChannel,record.value());
-        }
+        this.pipeline.sync();
     }
 
     public Set<String> getRecord(String skey){
