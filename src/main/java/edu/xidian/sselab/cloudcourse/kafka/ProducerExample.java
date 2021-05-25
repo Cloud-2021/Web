@@ -11,20 +11,22 @@ import java.util.Scanner;
 
 public class ProducerExample {
 
-	private String topicName;
+	private String topicName="cloude";
 
 	public ProducerExample(String name){
 		topicName = name;
 	}
+	public ProducerExample(){}
 
 	public static void main(String[] args) throws IOException, InterruptedException {
-		ProducerExample producerExample = new ProducerExample("Tester0");
+		ProducerExample producerExample = new ProducerExample("cloude");
 		producerExample.sendRecords();
 	}
 
 	public void sendRecords() throws IOException, InterruptedException {
 		Properties props = new Properties();
-		props.put("bootstrap.servers", "192.168.131.143:9092,192.168.131.146:9092,192.168.131.145:9092");//kafka clusterIP
+		props.put("bootstrap.servers", "123.57.186.221:9092,123.56.224.75:9092,8.140.46.221:9092");//kafka clusterIP
+		//props.put("bootstrap.servers","8.140.46.221:9092");
 		props.put("acks", "1");
 		props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 		props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
@@ -52,7 +54,7 @@ public class ProducerExample {
 			});
 			i++;
 			j++;
-			Thread.sleep(50);
+			Thread.sleep(1000);
 		}
 		producer.close();
 	}

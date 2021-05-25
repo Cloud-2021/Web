@@ -16,12 +16,14 @@ public class HbaseClient {
     private Configuration configuration;
 
     private Connection connection;
-    
-    
+
     @Autowired
-    public HbaseClient(HbaseProperties hbaseProperties) {
+    public HbaseClient() {
         configuration = new Configuration();
-        configuration.set("hbase.zookeeper.quorum", hbaseProperties.getHbaseNodes());
+        configuration = new Configuration();
+        //这里是HBase连接配置，只需要改一下主机名即可，不需要改变端口
+        configuration.set("hbase.zookeeper.quorum","39.103.190.217,39.108.101.177,8.142.69.187");
+        configuration.set("hbase.zookeeper.property.clientPort","2181");
     }
 
     public Connection getConnection() {

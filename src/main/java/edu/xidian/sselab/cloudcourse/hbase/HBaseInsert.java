@@ -16,10 +16,10 @@ import java.util.List;
  */
 public class HBaseInsert {
 
-    private final String RECORD_TABLENAME = "Record";
-    private final String FAMILY_NAME = "info";  //给出的用例中只有一个Record表，表中只有一个info列族
+    public static final String RECORD_TABLENAME = "Record";
+    public static String FAMILY_NAME = "info";  //给出的用例中只有一个Record表，表中只有一个info列族
 
-    public  boolean insertRecordsToHBase(ArrayList<Record> allRecords){
+    public  static boolean insertRecordsToHBase(List<Record> allRecords){
         List<Put> allPuts = new ArrayList<>();
         for(Record record : allRecords) {
             //1.确定行键 （placeID##time##eid）
@@ -36,6 +36,7 @@ public class HBaseInsert {
         Table table = HBaseConf.getTableByName(RECORD_TABLENAME);
         try {
             table.put(allPuts);
+            System.out.println("HBase insertion done.");
         } catch (IOException e) {
             e.printStackTrace();
             return false;

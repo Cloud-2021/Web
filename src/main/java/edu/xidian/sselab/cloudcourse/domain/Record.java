@@ -28,7 +28,7 @@ public class Record {
 
     private Double latitude;
 
-    public Record json2Record(String jsonString){
+    public static Record json2Record(String jsonString){
         return  Record.gson.fromJson(jsonString,Record.class);
     }
     

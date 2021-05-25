@@ -5,13 +5,21 @@ package edu.xidian.sselab.cloudcourse.redis;
  */
 
 
+import edu.xidian.sselab.cloudcourse.domain.Record;
+import edu.xidian.sselab.cloudcourse.hbase.HBaseConf;
+import edu.xidian.sselab.cloudcourse.hbase.HBaseInsert;
 import lombok.Data;
 import lombok.ToString;
+import org.apache.hadoop.hbase.client.Connection;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.springframework.stereotype.Component;
+import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -19,9 +27,10 @@ import java.util.Set;
 public class ClientRedis {
     private  Jedis jedis;
     private  Pipeline pipeline;
-    private  String key = "05132021";
-    private  String hostIP = "192.168.131.143";
+    private  String key = "cloud0";
+    private  String hostIP = "1.116.69.183";
     private  String mainChannel = "RawDataFromKafka";
+    //private  Jedp
 
     public ClientRedis(){
         this.setRelation(this.hostIP);
@@ -29,13 +38,16 @@ public class ClientRedis {
 
     public  ClientRedis(String hostIP){
         this.setRelation(hostIP);
+    }
 
+    public  static  void  main(String[] args){
+        ClientRedis clientRedis = new ClientRedis();
     }
 
 
     //与redis建立连接
     public  void setRelation(String hostIP){
-        int port = 6379;
+        int port = 6333;
         Jedis aJedis = new Jedis(hostIP,port);
         if(aJedis!=null){
             this.jedis = aJedis;
@@ -68,11 +80,28 @@ public class ClientRedis {
     }
 
     //使用pipeline批量插入大量kafka数据集合
-    public  void  dataFromKafka2RDB(ConsumerRecords<String, String> records){
+    public void dataFromKafka2RDB(ConsumerRecords<String, String> records){
         for(ConsumerRecord<String,String> record:records){
             this.pipeline.sadd(this.key,record.value());
+            System.out.println("Redis insertion: "+record.value()+" completed.");
         }
         this.pipeline.sync();
+    }
+
+    public void insertIntoHBase(){
+
+        Connection connection = HBaseConf.getConnection();
+        if (connection==null){
+            System.out.println("Redis insertIntoHBase connection null");
+            return;
+        }
+        Set<String> curRecords = this.getRecord(this.getKey());
+        List<Record> curRecordsList = new ArrayList<>();
+        for (String record:curRecords){
+            curRecordsList.add(Record.json2Record(record));
+        }
+        HBaseInsert.insertRecordsToHBase(curRecordsList);
+        this.clearSet(); //清空已经插入HBase的数据
     }
 
     public Set<String> getRecord(String skey){
