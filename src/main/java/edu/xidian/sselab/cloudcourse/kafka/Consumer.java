@@ -8,6 +8,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.Set;
@@ -39,12 +40,12 @@ public class Consumer implements  Runnable{
 		this.consume();
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		new Consumer("cloude").consume();
 	}
 
 
-	public  void consume(){
+	public  void consume() throws IOException {
 		Properties props = new Properties();
 		props.put("bootstrap.servers", "123.57.186.221:9092,123.56.224.75:9092,8.140.46.221:9092");//kafka clousterIP
 		//props.put("bootstrap.servers","8.140.46.221:9092");

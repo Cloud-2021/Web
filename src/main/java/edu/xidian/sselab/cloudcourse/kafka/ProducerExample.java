@@ -54,7 +54,7 @@ public class ProducerExample {
 			});
 			i++;
 			j++;
-			Thread.sleep(1000);
+			Thread.sleep(1500);
 		}
 		producer.close();
 	}

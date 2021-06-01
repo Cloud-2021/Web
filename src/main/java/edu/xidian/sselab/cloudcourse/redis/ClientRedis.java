@@ -7,6 +7,7 @@ package edu.xidian.sselab.cloudcourse.redis;
 
 import edu.xidian.sselab.cloudcourse.domain.Record;
 import edu.xidian.sselab.cloudcourse.hbase.HBaseConf;
+import edu.xidian.sselab.cloudcourse.hbase.HBaseCreateOP;
 import edu.xidian.sselab.cloudcourse.hbase.HBaseInsert;
 import lombok.Data;
 import lombok.ToString;
@@ -18,6 +19,7 @@ import redis.clients.jedis.Client;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +31,7 @@ public class ClientRedis {
     private  Pipeline pipeline;
     private  String key = "cloud0";
     private  String hostIP = "1.116.69.183";
+    private  int port = 6333;
     private  String mainChannel = "RawDataFromKafka";
     //private  Jedp
 
@@ -40,15 +43,11 @@ public class ClientRedis {
         this.setRelation(hostIP);
     }
 
-    public  static  void  main(String[] args){
-        ClientRedis clientRedis = new ClientRedis();
-    }
 
 
     //与redis建立连接
     public  void setRelation(String hostIP){
-        int port = 6333;
-        Jedis aJedis = new Jedis(hostIP,port);
+        Jedis aJedis = new Jedis(hostIP,this.port);
         if(aJedis!=null){
             this.jedis = aJedis;
             this.pipeline = jedis.pipelined();
@@ -88,20 +87,31 @@ public class ClientRedis {
         this.pipeline.sync();
     }
 
-    public void insertIntoHBase(){
+    public static void main(String[] args) throws IOException {
+        ClientRedis clientRedis = new ClientRedis();
+        clientRedis.insertIntoHBase();
+        System.out.println(clientRedis.getSetSize());
+    }
+
+    public void insertIntoHBase() throws IOException {
 
         Connection connection = HBaseConf.getConnection();
-        if (connection==null){
-            System.out.println("Redis insertIntoHBase connection null");
-            return;
-        }
+        if (connection!=null){
+            System.out.println("connection established.");
+
         Set<String> curRecords = this.getRecord(this.getKey());
         List<Record> curRecordsList = new ArrayList<>();
         for (String record:curRecords){
             curRecordsList.add(Record.json2Record(record));
         }
+        List<String> familys = new ArrayList<>();
+        familys.add("info");
+        HBaseCreateOP.CreateTable("Record" , familys);
         HBaseInsert.insertRecordsToHBase(curRecordsList);
-        this.clearSet(); //清空已经插入HBase的数据
+        //this.clearSet(); //清空已经插入HBase的数据
+        }else{
+            System.out.println("HBase connection failed.");
+        }
     }
 
     public Set<String> getRecord(String skey){

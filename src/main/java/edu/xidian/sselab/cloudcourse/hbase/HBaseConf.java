@@ -7,6 +7,8 @@ import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.apache.hadoop.hbase.client.Table;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *  类描述：
@@ -17,17 +19,21 @@ public class HBaseConf {
     private static Configuration configuration;
     private static Connection connection;
 
-    public static void main(String[] args){
+    public static void main(String[] args) throws IOException {
         Connection connection = HBaseConf.getConnection();
         if (connection!=null){
             System.out.println("connection established.");
         }
+        List<String> familys = new ArrayList<>();
+        familys.add("info");
+        HBaseCreateOP.CreateTable("Record" , familys);
     }
 
     static{
         configuration = new Configuration();
         //这里是HBase连接配置，只需要改一下主机名即可，不需要改变端口
-        configuration.set("hbase.zookeeper.quorum","39.103.190.217,39.108.101.177,8.142.69.187");
+        configuration.set("hbase.zookeeper.quorum","master,slave1,slave2");
+        //configuration.set("hbase.zookeeper.quorum","Cloud1,Cloud2,Cloud3");
         configuration.set("hbase.zookeeper.property.clientPort","2181");
         try {
             connection = ConnectionFactory.createConnection(configuration);
