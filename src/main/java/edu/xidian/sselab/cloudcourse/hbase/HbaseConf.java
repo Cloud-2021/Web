@@ -27,7 +27,8 @@ public class HBaseConf {
     static{
         configuration = new Configuration();
         //这里是HBase连接配置，只需要改一下主机名即可，不需要改变端口
-        configuration.set("hbase.zookeeper.quorum","Cloud1,Cloud2,Cloud3");
+        //configuration.set("hbase.zookeeper.quorum","Cloud1,Cloud2,Cloud3");
+        configuration.set("hbase.zookeeper.quorum","39.103.190.217,39.108.101.177,8.142.69.187");
         configuration.set("hbase.zookeeper.property.clientPort","2181");
         try {
             connection = ConnectionFactory.createConnection(configuration);
