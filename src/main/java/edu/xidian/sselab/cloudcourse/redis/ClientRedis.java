@@ -79,7 +79,7 @@ public class ClientRedis {
     }
 
     //使用pipeline批量插入大量kafka数据集合
-    public void dataFromKafka2RDB(ConsumerRecords<String, String> records){
+    public synchronized void dataFromKafka2RDB(ConsumerRecords<String, String> records){
         for(ConsumerRecord<String,String> record:records){
             this.pipeline.sadd(this.key,record.value());
             System.out.println("Redis insertion: "+record.value()+" completed.");
@@ -93,7 +93,7 @@ public class ClientRedis {
         System.out.println(clientRedis.getSetSize());
     }
 
-    public void insertIntoHBase() throws IOException {
+    public synchronized void insertIntoHBase() throws IOException {
 
         Connection connection = HBaseConf.getConnection();
         if (connection!=null){
@@ -108,7 +108,7 @@ public class ClientRedis {
         familys.add("info");
         HBaseCreateOP.CreateTable("Record" , familys);
         HBaseInsert.insertRecordsToHBase(curRecordsList);
-        //this.clearSet(); //清空已经插入HBase的数据
+        this.clearSet(); //清空已经插入HBase的数据
         }else{
             System.out.println("HBase connection failed.");
         }

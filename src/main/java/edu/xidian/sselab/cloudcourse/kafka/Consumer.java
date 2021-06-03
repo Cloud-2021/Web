@@ -66,13 +66,11 @@ public class Consumer implements  Runnable{
 			}
 			System.out.println("Get new amount of records :"+records.count());
 			this.clientRedis.dataFromKafka2RDB(records);
-			//if (this.clientRedis.getSetSize()>=100){
-			//	System.out.println(" redis get set size >1000");
-				//Set<String> curRecords = this.clientRedis.getRecord(this.clientRedis.getKey());
-				//this.clientRedis.publishRecords(curRecords);
-				//this.clientRedis.clearSet();
-			this.clientRedis.insertIntoHBase();
-			//}
+			if (this.clientRedis.getSetSize()>=50){
+				System.out.println("***************amount to threshold*****************");
+				this.clientRedis.insertIntoHBase();
+
+			}
 		}
 	}
 
